@@ -225,8 +225,12 @@ case MACROMOD : { return "MACROMOD"; }
 case NAME : { return "NAME"; }
 case AMPERSAND : { return "AMPERSAND"; }
 case BSLASH : { return "BSLASH"; }
-case BAD : { return "BAD"; }
-default : MM_ERR(" class_enumval bad enum value "<<MMPR(c))
+// later compilers complaing...
+//case BAD : { return "BAD"; }
+default : 
+if (c== IdxTy(BAD))  { return "BAD"; }
+
+MM_ERR(" class_enumval bad enum value "<<MMPR(c))
 } // switch 
 return StrTy("bad_enum_value");
 } // class_enumval 

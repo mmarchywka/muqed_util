@@ -213,7 +213,9 @@ void Update()
 m_full_path=m_root+m_path;
 //std::error_code ec;
 //m_canonical_path=Path::normalize(m_full_path);
-m_canonical_path=m_full_path.normalize();
+// 2024-06-09 deprecated on 24
+//m_canonical_path=m_full_path.normalize();
+m_canonical_path=m_full_path.lexically_normal();
 //if (ec) MM_ERR(MMPR(ec.message()));
 //m_full=(StrTy(m_canonical_path));
 m_full=m_canonical_path.generic_string();

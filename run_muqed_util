@@ -40,6 +40,23 @@ cpp -M  -std=gnu++11 -DTEST_muqed_util__  $INCDIR -x c++ ./muqed_util.h | sed -e
 
 }  # list_files 
 
+push_to_git()
+{
+l1=`find -name "*.zip" `
+newbackup -deps
+l2=`find -name "*.zip" `
+fn=`echo $l1 $l2 | sed -e 's/ /\n/g' | sort | uniq -c | awk '{ if ($1 =="1") print $2 }'`
+n=`echo $fn |wc  -w `
+if [ "$n" == "1" ]
+then
+echo pushing $fn
+mygit -push-zip "$fn" muqed_util
+else
+echo not sure what to push n=$n and $fn
+fi
+
+} # push_to_git
+
 
 help()
 {
@@ -96,6 +113,14 @@ shift
 list_files
 #shift
 fi
+
+if [ "$1" == "-push_to_git" ]
+then
+shift
+push_to_git
+shift
+fi
+
 
 
 if [ "$*" == "$start" ]

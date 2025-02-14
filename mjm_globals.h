@@ -166,6 +166,7 @@ std::string MJM_BLANK(double d) { std::stringstream ss; if (d!=0) ss<<d; return 
 #define MMPR4S( val1,val2,val3,val4) " "<<QUOTE( val1 )<<" "<<val1<<" "<<QUOTE( val2 )<<" "<<val2<<" "<<QUOTE( val3 )<<" "<<val3<<" "<<QUOTE( val4 )<<" "<<val4
 #define MMPR4SL( val1,val2,val3,val4) " "<<QUOTE( val1 )<<" "<<val1<<CRLF<<QUOTE( val2 )<<" "<<val2<<CRLF<<QUOTE( val3 )<<" "<<val3<<CRLF<<QUOTE( val4 )<<" "<<val4<<CRLF
 
+#define MMPR5( val1,val2,val3,val4,val5) " "<<QUOTE( val1=)<<val1<<" "<<QUOTE( val2=)<<val2<<" "<<QUOTE( val3=)<<val3 <<" "<<QUOTE( val4=)<<val4 <<" "<<QUOTE( val5=)<<val5
 
 #define MM_FAIL {int * i=0; *i=0; } 
 #define MM_FAULT {int * i=0; *i=0; } 

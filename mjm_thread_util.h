@@ -3,6 +3,11 @@
 
 #include <pthread.h>
 #include <vector>
+// https://stackoverflow.com/questions/21091000/how-to-get-thread-id-of-a-pthread-in-linux-c-program
+
+#include <unistd.h>
+#include <sys/types.h>
+
 
 template <class Tr>
 class mjm_thread_util 
@@ -307,6 +312,13 @@ static void fire_and_forget
 
 
 
+
+
+static IdxTy  thread_id() 
+{
+pid_t tid = gettid();
+return tid;
+}
 
 
 

@@ -29,6 +29,7 @@
 //#include "mjm_cli_ui.h"
 //#include "mjm_tokenized_collections.h"
 
+//#include "../mjmforkoff/mjm_forku.h"
 
 #include <algorithm>
 #include <map>
@@ -119,8 +120,6 @@ enum {  OUTBUFSZ=(1<<10), MAX_BASH_TEXT=(0) };
 enum { STACK_LIMIT=1<<16,STRING_GUARD=2};
 
 
-typedef mjm_blob<Tr> Blob;
-
 typedef mjm_thread_util<Tr> ThreadUtil;
 //typedef typename  mjm_thread_util<Tr>::mutex_vector MutexVector;
 typedef typename  ThreadUtil::mutex_vector MutexVector;
@@ -171,9 +170,14 @@ bool Bit(const IdxTy f, const IdxTy b) { return ( (f&(1<<b))!=0); }
 
 
 // API
-
+//typedef mjm_forku<Tr> Forku;
+typedef mjm_blob<Tr> Blob;
 	public:
+public:
+//private: 
+// wtf? 
 typedef Blob blob;
+typedef Blob blob_type;
 mjm_pawnoff() { Init(); }
 ~mjm_pawnoff() { Cleanup(); }
 void clean() { Cleanup(); }
@@ -317,6 +321,65 @@ StrTy x= StrTy(result);
 delete [] result; 
 return x;
 } // get_output
+/*
+
+ 2113  echo | ./mjm_forku.out  "fork doh \"xclip -i -selection clipboard \"" quit quit
+ 2114  echo | ./mjm_forku.out  norem  quiet "fork doh \"xclip -i -selection clipboard \"" quit quit
+
+*/
+StrTy escape(const StrTy & s, const IdxTy flags=0)
+{
+Ss ss;
+const char * p=s.c_str();
+while (*p) { 
+if (*p=='\\') ss<<"\\\\"; 
+if (*p=='\n'){ ss<<"\\\n";  ++p;  continue ; }
+if (*p=='\r'){ ss<<"\\\r";  ++p;  continue ; }
+//else if (*p==' ') ss<<'\\'; 
+ss<<*p;
+++p;
+} // p 
+return ss.str();
+} // escape
+
+StrTy detach( const StrTy & _d, const StrTy & cmd,const IdxTy flags)
+{
+//const bool norem=false;
+const bool file=Bit(flags,0);
+const bool norem= (mjm_global_flags::mm_delete_temps );
+const bool quiet=false;
+const StrTy detach_cmd="mjm_forku.out";
+Blob d,err,cout;
+Ss ss;
+ss<<detach_cmd;
+ss<<" ";
+if (norem) { ss<<"norem ";}
+if (quiet) { ss<<"quiet ";}
+
+ss<<" \"fork \\\"";
+ss<<escape(_d);
+ss<<"\\\" \\\""<<cmd;
+ss<<"\\\"";
+if (flags!=0) ss<<" "<<flags;
+ss<<"\" quit";
+StrTy _cmd=ss.str();
+//IdxTy Fork( const StrTy & s, const StrTy & cmd, const IdxTy flags)
+//const bool file=Bit(flags,0);
+// these should have been set but another chance...
+//const bool norem=Bit(flags,1);
+//const bool noerr=Bit(flags,2);
+//if (cmd=="quiet") {mm_err_enable=false; continue;  }
+//if (cmd=="norem") {mm_delete_temps=false; continue;  }
+
+//if (file) { _cmd="cat \""+s+"\" |"+cmd; }
+//if (file) { _cmd=cmd; d.load(s); }
+//else { d=s; _cmd=cmd; }
+IdxTy rc=fileio(cout,err,d,_cmd,3);
+const bool wrong=(rc!=0)||(err.size());
+MM_ERR(MMPR4(_cmd,StrTy(err),rc,StrTy(cout)))
+
+return StrTy(err);
+} // detach
 StrTy get_output_with_input_bg( const StrTy & d, const StrTy & cmd)
 {
 // this needs to create a dummy instance that
@@ -506,6 +569,7 @@ IdxTy m_width;
 IdxTy m_debug;
 void Cleanup()
 {
+// polairty is right but name is confusing doh used properly elsewhere
 const bool norem= (mjm_global_flags::mm_delete_temps );
 if (m_verify_temps_gone) {
 MM_ERR(" pawnoff cleanup "<<MMPR2(norem,m_files.size())) } 
@@ -864,12 +928,12 @@ const IdxTy BUFSZ=OUTBUFSZ; // 1<<12;
         }
     } catch (...) {
         pclose(pipe);
-	delete buffer;
+	delete[] buffer;
         throw;
     }
     pclose(pipe);
 	s=result;
-	delete buffer;
+	delete [] buffer;
 return s; 
 }
 
