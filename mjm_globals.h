@@ -53,6 +53,13 @@ namespace mjm_global_credits
 {
 std::map<std::string, int> mm_credited;
 std::vector<std::string> mm_credit_vector;
+std::string credits()
+{
+std::string s;
+auto ii=mm_credited.begin(); while (ii!=mm_credited.end())  
+{ const auto & x=mm_credit_vector[(*ii).second]; if (x.length()>2) s=s+"\n"+x ; ++ii; }
+return s;
+}
 void mm_credit(const std::string & src, const std::string & v)
 {
 if (mm_credited.find(src)==mm_credited.end()) { mm_credited[src]=mm_credit_vector.size();
@@ -76,6 +83,12 @@ credit(const std::string & src, const std::string & v) { mm_credit(src,v); }
 
 
 #define MM_GETSET(t,x,y) const t & x()const  { return y; } void  x(const t & asdf )  { y=asdf; } 
+#define MM_GETSETP(t,x,y)  t * x()  { return y; } void  x( t * asdf )  { y=asdf; } 
+
+//#define SETGET(nm,mem,ty) void nm(const ty & x) { mem=x; } const ty & nm() const { return mem; }
+#define MM_SETGETSTATE(nm,flag,bit) void nm(const bool x) { MM_ERR("ASSFUCK "<<x)  Set(flag,bit,x); MM_ERR("shita "<<flag ) } const bool nm() const { return Bit(flag,bit); }
+
+
 
 
 #define MM_WAIT {std::cerr<<" wiat for input "<<__FILE__<<__LINE__<<"\n"; std::cerr.flush(); StrTy x;  std::cin >> x; }

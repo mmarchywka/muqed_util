@@ -486,7 +486,8 @@ ps.add_error(w,j,ss.str().c_str());
 
 ////////////////////////////////////////////
 if (!found) { 
-MM_ERR(" macro lefover not found stage 1")
+// 2025-09-17 hunintg own old stuff 
+MM_ERR(" macro lefover not found stage 1 "<<MMPR(w))
 auto ii=m_dmacros.find(w);
 // these need to be defined everyday for a macro recipe. 
 // 2021-08-11 want a syntax for leftovres from prior day 
@@ -939,6 +940,7 @@ ps.add_error(w,j,ss);
 }
 const bool skip_all_expand=Bit(m_expand_state,2);
 bool expand_lines= (cn.expand_lines());
+bool expand_never= (cn.expand_never_ever());
 // the blank choice could be a legitimate one 
 bool try_an_expand=Bit(m_expand_state,0)||cn.expand();// (choice!=""); 
 
@@ -968,6 +970,7 @@ if (have_ev_type || have_ev_line_type) choice=(*ev);
 try_an_expand|=
 have_ev_type||have_ev_line_type || have_exp_type||have_exp_line_type; 
 try_an_expand&=!skip_all_expand;
+try_an_expand&=!expand_never;
 if (try_an_expand)
 {
 if (too_deep)

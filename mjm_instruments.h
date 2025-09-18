@@ -250,6 +250,7 @@ Source(fn,die);
 }
 void set_prompt(const StrTy & s) { m_prompt=s; }
 void set_prompt(const char *  s) { m_prompt=StrTy(s); }
+IdxTy code_split_base() const { return CODE_SPLIT_BASE; } 
 void set_split(const IdxTy & s, const char sep)
 {
 m_splitter=s;
@@ -460,6 +461,7 @@ m_words.clear();
 // can add quotes and comments and crap later 
 // danger will robinson this does not update n if there is nothing there, need to check
 //while (ok(&ss)) { ss>>n; m_words.push_back(n); }
+//MM_ERR(" ASSFUCK "<<MMPR(m_splitter))
 switch (m_splitter)
 {
 case 1: { parse_full(m_words,line,m_sep); break; } 
@@ -578,8 +580,9 @@ void parse_partial(Tv & words, const char * s,const char sep, const IdxTy pwords
 {
 const IdxTy sz=strlen(s);
 bool preserve_quotes=Bit(flags,0);
+const bool debug=false;
 bool deb=false;
-MM_ERR(MMPR3(sz,sep,s))
+if (debug) MM_ERR(MMPR3(sz,sep,s))
 const IdxTy mxsz=10*sz+1;
 char c[mxsz];
 IdxTy pc=0;

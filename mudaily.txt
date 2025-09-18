@@ -19,10 +19,13 @@ SNACKS_LOG="xxxxxxx"
 # in the input 
 #outfil="$SE_SCRIPT_DATA/$SNACKS_LOG"
 templatefil="$tmpdir/cases_template.txt"
-markupfil="$tmpdir/cases_markup.txt"
+#markupfil="$tmpdir/cases_markup.txt"
+markupfil="$outdir/cases_markup.txt"
 # on path but should be in /home/scripts/links
 #mjm_exe="mjm_diet_diary_form.out"
 mjm_exe="muqed_util.out"
+mjm_exe="/home/documents/cpp/proj/muqed_util/muqed_util.out"
+echo using dev muqed $mjm_exe
 runlog="$tmpdir/run_log.txt"
 } # prod_setup
 
@@ -496,6 +499,12 @@ fi
 if [ "$1" == "-recent-errors" ]
 then
 make_markup | $mjm_exe 2>&1 | cat - >> "$runlog"
+if [ ! -e "$markupfil" ]
+then
+echo the output file $markupfil does not exist 
+echo see $runlog
+cat $runlog
+fi
 cat "$markupfil" | grep -B 2 "^#"   | highlight -red "#"
 errc=`cat "$markupfil" | grep  "^#"   | wc -l `
 echo "error count = "$errc 

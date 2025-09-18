@@ -626,7 +626,11 @@ bool is_private_sfx(const char *  a) const{return is_private_sfx(StrTy(a)); }
 bool is_private_sfx(const StrTy & a)const 
 { return (m_private_sfxs.find(a)!=m_private_sfxs.end()); } 
 const StrTy & rconv(const StrTy & x) const {  return Rconv(x); } 
+// a noun with parts can be expanded in use by use manner
+// or always. Logic is confusing. All parts must exist as nouns
+// not sure where fake noun creation stands. 
 bool expand() const { return Bit(m_expand,0); }  // 0
+bool expand_never_ever() const { return Bit(m_expand,8); }  // 0
 bool expand_lines() const { return Bit(m_expand,3); }  // 3
 IdxTy expand_rank() const { return (m_expand>>1)&3; } //1,2 
 PieceMap & parts() { return  m_alt_parts[""]; } 

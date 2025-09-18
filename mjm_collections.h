@@ -8,6 +8,8 @@
 // for ragged now 
 #include "mjm_string_kvp.h"
 
+#include "mjm_bin_cols.h" 
+#include "../nettle/mjm_ya_buffer.h" 
 #include "mjm_string_tokenizer.h"
 // needed for treelayout apparently
 //#include "mjm_gen_viz.h"
@@ -530,6 +532,9 @@ const StrTy dump(const IdxTy flags=0) const
 { Ss ss; dump(ss); return ss.str(); }  
 }; // _ActualLine
 
+typedef mjm_ya_buffer<Tr> YaBuf;
+typedef mjm_bin_cols<Tr> BinCols;
+// API
 
 public:
 typedef StrTy Word;
@@ -561,7 +566,8 @@ LiCItor begin() const { return m_lines.begin(); }
 LiCItor end() const { return m_lines.end(); } 
 LiItor begin()  { return m_lines.begin(); } 
 LiItor end()  { return m_lines.end(); } 
-
+const Line & back() const { return m_lines[m_lines.size()-1]; }
+ Line & back() { return m_lines[m_lines.size()-1]; }
 const StrTy&  name()const  { return m_name; } 
 const StrTy&  name( const StrTy & s )  {m_name=s;  return m_name; } 
 
@@ -682,7 +688,49 @@ else r.load_lines(fn,debug);
 MM_ERR(MMPR2(r.size(),name))
 } // load_canned
 
+void load_bin(IsTy * is, const StrTy & sin, const IdxTy flags)
+{
+BaseParams kvp(sin);
+IdxTy bsize=(1<<16);
+kvp.get(bsize,"bsize");
+BinCols bc(sin,flags);
+MM_ERR(MMPR(bsize))
+YaBuf ya;
+ya.size(bsize);
+while (true)
+{
+Line l;
+std::vector<StrTy> words;
+bool eof=ya.get_from_stream(is);
+if (is->bad()) { MM_ERR("bad ") break; }
+IdxTy n=0;
+MM_ERR(MMPR4(is->bad(),is->eof(),is->fail(),ya.available()))
+while(0!=(n=ya.available()))
+{
+char * s=new char[n];
+ya.read(s,n,1);
+IdxTy nused=n;
+IdxTy rc=bc.add(l,s,nused,eof?1:0);
+delete [] s;
+if (n<nused) { ya.take(n);  MM_ERR(" fucker "<<MMPR2(n,nused)) break; } 
+ya.take(nused);
+MM_ERR(MMPR4(size(),rc,nused,ya.available()))
+// if rc==0, rhw linw ia o abd readly to add
+if (rc==0) { add(l); l.clear(); continue; } 
+// if eof have to eave crap there
+if (eof ) break; 
+// otherwie continue to get stuff;
 
+
+} // ya
+if (eof) break;
+if (ya.available()==0) if (is->fail()) { MM_ERR("bad ") break; }
+} 
+if ( ya.available())
+{ MM_ERR(" read ended with straggles "<<MMPR(ya.available())) } 
+MM_ERR(MMPR(size()))
+MM_ERR(MMPR(dump_ssv()))
+} // load_bin
 
 
 
@@ -989,6 +1037,10 @@ add_ci();
 ConmfigureReader( *m_lip );
 return m_lip;
 }
+// m_lip could be null...
+const IdxTy code_split_base() const { 
+return CommandInterpretter::CODE_SPLIT_BASE;
+ } 
 CommandInterpretter * set_split(const IdxTy split, const char c)
 {
 MM_ONCE(" not setting m_splitter wtf ",)
@@ -1217,7 +1269,7 @@ return x;
 // should have a sg to dump to a srream 
 StrTy dump_ssv( ) const { return dump(1+2+128+1024," "); } 
 StrTy dump_ssv_unsafe( ) const { return dump(1+2," "); } 
-StrTy dump( const IdxTy flags=0,const StrTy &  s=" ") const
+StrTy dump( const IdxTy flags=0,const StrTy &  s=" ",const IdxTy maxlines=0) const
 {
 Ss ss;
 IdxTy i=0;
@@ -1246,6 +1298,8 @@ StrTy quote="\"";
 
 const StrTy sep=seps;
 const char cs=sep.c_str()[0];
+// just found 2025-04-03 no idea wth it was 4 lol. 
+//IdxTy line=0;
 MM_LOOP(ii,m_lines)
 {
 IdxTy field=0;
@@ -1278,10 +1332,11 @@ if (add_quote) ss<<quote;
 ++field;
 add_sep=true;
 ++debug_field_count;
-}
+} // jj? 
 ss<<CRLF;
 ++i;
-} 
+if (maxlines!=0) if (i>=maxlines) break; 
+}  // ii ? 
 
 return ss.str();
 }
@@ -1409,7 +1464,7 @@ const bool debug_parse=((flags&32)!=0);
 const bool add_breaks=((flags&256)!=0)&&(loss.m_max!=0);
 const bool add_padding=(loss.pad_size()!=0);
 const bool add_headers=((flags&512)==0);
-MM_ERR("dump_;atex "<<MMPR4(use_space,add_seq,add_quote,add_escapes)
+MM_ERR("dump_latex "<<MMPR4(use_space,add_seq,add_quote,add_escapes)
 <<MMPR4(flags,use_s,add_breaks,loss.m_max)
 <<MMPR(add_padding))
 StrTy seps="&";
